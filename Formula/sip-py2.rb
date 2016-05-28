@@ -1,4 +1,4 @@
-class SipPy3 < Formula
+class SipPy2 < Formula
   desc "Tool to create Python bindings for C and C++ libraries"
   homepage "https://www.riverbankcomputing.com/software/sip/intro"
   url "https://downloads.sourceforge.net/project/pyqt/sip/sip-4.18/sip-4.18.tar.gz"
@@ -15,10 +15,10 @@ class SipPy3 < Formula
 
   keg_only "Special version for QGIS development builds"
 
-  depends_on "python3"
+  depends_on "python"
 
   def install
-    py3_ver = Language::Python.major_minor_version("python3").to_s
+    py_ver = Language::Python.major_minor_version("python").to_s
     if build.head?
       # Link the Mercurial repository into the download directory so
       # build.py can use it to figure out a version number.
@@ -28,9 +28,9 @@ class SipPy3 < Formula
     end
 
     # Note the binary `sip` is the same for python 2.x and 3.x
-    system "python3", "configure.py",
+    system "python", "configure.py",
                    "--deployment-target=#{MacOS.version}",
-                   "--destdir=#{lib}/python#{py3_ver}/site-packages",
+                   "--destdir=#{lib}/python#{py_ver}/site-packages",
                    "--bindir=#{bin}",
                    "--incdir=#{include}",
                    "--sipdir=#{share}/sip"
@@ -48,7 +48,7 @@ class SipPy3 < Formula
   end
 
   test do
-    py3_ver = Language::Python.major_minor_version("python3").to_s
+    py_ver = Language::Python.major_minor_version("python").to_s
     (testpath/"test.h").write <<-EOS.undent
       #pragma once
       class Test {
@@ -92,9 +92,9 @@ class SipPy3 < Formula
     system ENV.cxx, "-shared", "-Wl,-install_name,#{testpath}/libtest.dylib",
                     "-o", "libtest.dylib", "test.cpp"
     system "#{bin}/sip", "-b", "test.build", "-c", ".", "test.sip"
-    ENV["PYTHONPATH"] = lib/"python#{py3_ver}/site-packages"
-    system "python3", "generate.py"
+    ENV["PYTHONPATH"] = lib/"python#{py_ver}/site-packages"
+    system "python", "generate.py"
     system "make", "-j1", "clean", "all"
-    system "python3", "run.py"
+    system "python", "run.py"
   end
 end

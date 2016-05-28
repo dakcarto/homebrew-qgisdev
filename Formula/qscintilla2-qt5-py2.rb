@@ -1,4 +1,4 @@
-class Qscintilla2 < Formula
+class Qscintilla2Qt5Py2 < Formula
   desc "Port to Qt of the Scintilla editing component"
   homepage "https://www.riverbankcomputing.com/software/qscintilla/intro"
   url "https://downloads.sf.net/project/pyqt/QScintilla2/QScintilla-2.9.2/QScintilla_gpl-2.9.2.tar.gz"
@@ -11,11 +11,11 @@ class Qscintilla2 < Formula
     # sha256 "2eabd5ae2713d198c41c33d8fc7ae1f1c99a2b1a398b228602b5e26301a225c9" => :mavericks
   end
 
-  keg_only "Special version of for QGIS development builds"
+  keg_only "Special version for QGIS development builds"
 
   option "without-plugin", "Skip building the Qt Designer plugin"
 
-  depends_on :python
+  depends_on "python"
   depends_on "pyqt-qt5-py2"
   depends_on "qt5"
 
@@ -53,7 +53,7 @@ class Qscintilla2 < Formula
 
     cd "Python" do
       (share/"sip").mkpath
-      system python, "configure.py", "-o", lib, "-n", include,
+      system "python", "configure.py", "-o", lib, "-n", include,
                        "--apidir=#{prefix}/qsci",
                        "--destdir=#{lib}/python#{py2_ver}/site-packages/PyQt4",
                        "--qsci-sipdir=#{share}/sip",

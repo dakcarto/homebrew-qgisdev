@@ -12,7 +12,7 @@ class QwtQt5 < Formula
     # sha256 "e5e240d5a1b148679d79b95216615bfb997a41be27d178d8b056e0be3ffab6cd" => :mavericks
   end
 
-  keg_only "Special version of for QGIS development builds"
+  keg_only "Special version for QGIS development builds"
 
   option "with-qwtmathml", "Build the qwtmathml library"
   option "without-plugin", "Skip building the Qt Designer plugin"

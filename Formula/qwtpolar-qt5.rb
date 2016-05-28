@@ -1,27 +1,23 @@
-class Qwtpolar < Formula
+class QwtpolarQt5 < Formula
   desc "Library for displaying values on a polar coordinate system"
   homepage "http://qwtpolar.sourceforge.net/"
   url "https://downloads.sf.net/project/qwtpolar/qwtpolar/1.1.0/qwtpolar-1.1.0.tar.bz2"
   sha256 "e45a1019b481f52a63483c536c5ef3225f1cced04abf45d7d0ff8e06d30e2355"
 
   bottle do
-    cellar :any
-    sha256 "e51aec713366e7406d63b0eea55f41385a24d67ff7d298f9fd479ae14dea2e3c" => :el_capitan
-    sha256 "8bd14ade82bd28887ec4bfef8098cd893806b380b2176eae6885ec5da4168a54" => :yosemite
-    sha256 "cb47115b5ca12d61ccc63a2cd681323825f6a73001a02f62a1f58c8a920ae82d" => :mavericks
+    # cellar :any
+    # sha256 "e51aec713366e7406d63b0eea55f41385a24d67ff7d298f9fd479ae14dea2e3c" => :el_capitan
+    # sha256 "8bd14ade82bd28887ec4bfef8098cd893806b380b2176eae6885ec5da4168a54" => :yosemite
+    # sha256 "cb47115b5ca12d61ccc63a2cd681323825f6a73001a02f62a1f58c8a920ae82d" => :mavericks
   end
+
+  keg_only "Special version for QGIS development builds"
 
   option "with-examples", "Install source code for example apps"
   option "without-plugin", "Skip building the Qt Designer plugin"
-  option "with-qt5", "Build with Qt 5 support"
 
-  if build.with? "qt5"
-    depends_on  "qt"
-    depends_on "qwt"
-  else
-    depends_on "qt5"
-    depends_on "qwt" => "with-qt5"
-  end
+  depends_on "qt5"
+  depends_on "qwt-qt5"
 
 
   # Update designer plugin linking back to qwtpolar framework/lib after install
@@ -53,13 +49,13 @@ class Qwtpolar < Formula
     args = %W[-config release -spec]
     # On Mavericks we want to target libc++, this requires a unsupported/macx-clang-libc++ flag
     if ENV.compiler == :clang && MacOS.version >= :mavericks
-      args << (build.with?("qt5") ?"macx-clang" : "unsupported/macx-clang-libc++")
+      args << "macx-clang")
     else
       args << "macx-g++"
     end
 
-    ENV["QMAKEFEATURES"] = "#{Formula["qwt"].opt_prefix}/features"
-    system "qmake", *args
+    ENV["QMAKEFEATURES"] = "#{Formula["qwt-qt5"].opt_prefix}/features"
+    system Formula["qt5"].bin/"qmake", *args
     system "make"
     system "make", "install"
   end

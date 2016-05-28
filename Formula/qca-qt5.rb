@@ -1,4 +1,4 @@
-class Qca < Formula
+class QcaQt5 < Formula
   desc "Qt Cryptographic Architecture (QCA)"
   homepage "http://delta.affinix.com/qca/"
   head "https://anongit.kde.org/qca.git"
@@ -15,18 +15,19 @@ class Qca < Formula
   end
 
   bottle do
-    revision 3
-    sha256 "62846de848b7e7c4f0b3eb5a045940c8b80554ef388d9646dd7b02b195b1a5c8" => :el_capitan
-    sha256 "a2afc96b7058b81e6b640c480b621434c7b6ba5e82cc0af4e38766d7efe42251" => :yosemite
-    sha256 "c948a6d95b7ff4da029eedeaca69e5b51d9227e9a7cf369daa98cfda5cf73528" => :mavericks
+    # revision 3
+    # sha256 "62846de848b7e7c4f0b3eb5a045940c8b80554ef388d9646dd7b02b195b1a5c8" => :el_capitan
+    # sha256 "a2afc96b7058b81e6b640c480b621434c7b6ba5e82cc0af4e38766d7efe42251" => :yosemite
+    # sha256 "c948a6d95b7ff4da029eedeaca69e5b51d9227e9a7cf369daa98cfda5cf73528" => :mavericks
   end
+
+  keg_only "Special version for QGIS development builds"
 
   option "with-api-docs", "Build API documentation"
 
   depends_on "cmake" => :build
   depends_on "pkg-config" => :build
-  depends_on "qt" => :recommended
-  depends_on "qt5" => :optional
+  depends_on "qt5"
 
   # Plugins (QCA needs at least one plugin to do anything useful)
   depends_on "openssl" # qca-ossl
@@ -42,10 +43,8 @@ class Qca < Formula
   end
 
   def install
-    odie "Qt dependency must be defined" if build.without?("qt") && build.without?("qt5")
-
     args = std_cmake_args
-    args << "-DQT4_BUILD=#{build.with?("qt5") ? "OFF" : "ON"}"
+    args << "-DQT4_BUILD=OFF"
     args << "-DBUILD_TESTS=OFF"
 
     # Plugins (qca-ossl, qca-cyrus-sasl, qca-logger, qca-softstore always built)
@@ -66,6 +65,6 @@ class Qca < Formula
 
   test do
     system "#{bin}/qcatool", "--noprompt", "--newpass=",
-           "key", "make", "rsa", "2048", "test.key"
+                             "key", "make", "rsa", "2048", "test.key"
   end
 end

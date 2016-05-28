@@ -1,4 +1,4 @@
-class Pyqt < Formula
+class PyqtQt5Py2 < Formula
   desc "Python bindings for Qt"
   homepage "https://www.riverbankcomputing.com/software/pyqt/intro"
   url "https://downloads.sf.net/project/pyqt/PyQt4/PyQt-4.11.4/PyQt-mac-gpl-4.11.4.tar.gz"
@@ -11,19 +11,19 @@ class Pyqt < Formula
     # sha256 "7fa85daa46dc9639ad1a5ce930cac1d06c722528b3caad466044b22221b2253d" => :mavericks
   end
 
-  keg_only "Special version of for QGIS development builds"
+  keg_only "Special version for QGIS development builds"
 
-  depends_on :python
+  depends_on "python"
   depends_on "qt5"
-  depends_on "sip"
+  depends_on "sip-py2"
 
   def install
+    py2_ver = Language::Python.major_minor_version("python").to_s
+
     # On Mavericks we want to target libc++, this requires a non default qt makespec
     if ENV.compiler == :clang && MacOS.version >= :mavericks
       ENV.append "QMAKESPEC", "macx-clang"
     end
-
-    py2_ver = Language::Python.major_minor_version("python").to_s
 
     ENV.prepend_path "PYTHONPATH", "#{Formula["sip"].opt_lib}/python#{py2_ver}/site-packages"
 
@@ -51,7 +51,7 @@ class Pyqt < Formula
     begin
       cp_r(Dir.glob("*"), dir)
       cd dir do
-        system python, "configure.py", *args
+        system "python", "configure.py", *args
         inreplace "pyqtconfig.py", Formula["qt5"].prefix, Formula["qt5"].opt_prefix
         (lib/"python#{py2_ver}/site-packages/PyQt5").install "pyqtconfig.py"
       end
@@ -64,7 +64,7 @@ class Pyqt < Formula
       args << "--spec" << "macx-clang"
     end
 
-    system python, "configure-ng.py", *args
+    system "python", "configure-ng.py", *args
     system "make"
     system "make", "install"
     system "make", "clean" # for when building against multiple Pythons
@@ -81,6 +81,6 @@ class Pyqt < Formula
       QtNetwork.QNetworkAccessManager().networkAccessible()
     EOS
     ENV.prepend_path "PYTHONPATH", lib/"python#{py2_ver}/site-packages"
-    system python, "test.py"
+    system "python", "test.py"
   end
 end

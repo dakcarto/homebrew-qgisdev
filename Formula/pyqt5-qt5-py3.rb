@@ -1,98 +1,68 @@
-class Pyqt < Formula
-  desc "Python bindings for Qt"
-  homepage "https://www.riverbankcomputing.com/software/pyqt/intro"
-  url "https://downloads.sf.net/project/pyqt/PyQt4/PyQt-4.11.4/PyQt-mac-gpl-4.11.4.tar.gz"
-  sha256 "f178ba12a814191df8e9f87fb95c11084a0addc827604f1a18a82944225ed918"
+class Pyqt5Qt5Py3 < Formula
+  desc "Python bindings for v5 of Qt"
+  homepage "https://www.riverbankcomputing.com/software/pyqt/download5"
+  url "https://downloads.sourceforge.net/project/pyqt/PyQt5/PyQt-5.6/PyQt5_gpl-5.6.tar.gz"
+  sha256 "2e481a6c4c41b96ed3b33449e5f9599987c63a5c8db93313bd57a6acbf20f0e1"
 
   bottle do
-    revision 1
-    sha256 "6b388201f123ab3c390e08f4ff1c97e6c3ae7e4c8644fb86a2775a82bc812c19" => :el_capitan
-    sha256 "3e2e252c58bcf2692d948cfee0273f8aaf052c4d1084acbbad7ba44a43619aee" => :yosemite
-    sha256 "7fa85daa46dc9639ad1a5ce930cac1d06c722528b3caad466044b22221b2253d" => :mavericks
+    # sha256 "4815f60529eadc829c704adbfb6a01ea2daec7acae4c4f7871579d3b01bdbc63" => :el_capitan
+    # sha256 "ac14ff2a18458c8201415adf3dfbd872849b0fef9968e105c4ce43e72876fcbf" => :yosemite
+    # sha256 "111602985fb4ced414dc4722a1af8ee3d428b2e013e22bdae8d0d059570ac44c" => :mavericks
   end
 
-  option "without-python", "Build without python 2 support"
-  option "with-qt5", "Build with Qt 5 support"
+  keg_only "Special version for QGIS development builds"
 
-  depends_on :python3 => :optional
+  option "with-debug", "Build with debug symbols"
+  option "with-docs", "Install HTML documentation and python examples"
 
-  if build.without?("python3") && build.without?("python")
-    odie "pyqt: --with-python3 must be specified when using --without-python"
-  end
+  deprecated_option "enable-debug" => "with-debug"
 
-  depends_on "qt"
-
-  if build.with? "python3"
-    depends_on "sip" => "with-python3"
-  else
-    depends_on "sip"
-  end
+  depends_on "python3"
+  depends_on "qt5"
+  depends_on "sip-py3"
 
   def install
-    # On Mavericks we want to target libc++, this requires a non default qt makespec
-    if ENV.compiler == :clang && MacOS.version >= :mavericks
-      ENV.append "QMAKESPEC", "unsupported/macx-clang-libc++"
-    end
+    py3_ver = Language::Python.major_minor_version("python3").to_s
 
-    Language::Python.each_python(build) do |python, version|
-      ENV.append_path "PYTHONPATH", "#{Formula["sip"].opt_lib}/python#{version}/site-packages"
+    args = ["--confirm-license",
+            "--bindir=#{bin}",
+            "--destdir=#{lib}/python#{py3_ver}/site-packages",
+            "--stubsdir=#{lib}/python#{py3_ver}/site-packages/PyQt5",
+            "--sipdir=#{Formula["sip-py3"].opt_share}/sip/Qt5",
+            # sip.h could not be found automatically
+            "--sip-incdir=#{Formula["sip-py3"].opt_include}",
+            # Make sure the qt5 version of qmake is found.
+            # If qt4 is linked it will pickup that version otherwise.
+            "--qmake=#{Formula["qt5"].bin}/qmake",
+            # Force deployment target to avoid libc++ issues
+            "QMAKE_MACOSX_DEPLOYMENT_TARGET=#{MacOS.version}",
+            "--qml-plugindir=#{pkgshare}/plugins",
+            "--verbose"]
+    args << "--debug" if build.with? "debug"
 
-      args = %W[
-        --confirm-license
-        --bindir=#{bin}
-        --destdir=#{lib}/python#{version}/site-packages
-        --sipdir=#{share}/sip
-      ]
-
-      # We need to run "configure.py" so that pyqtconfig.py is generated, which
-      # is needed by QGIS, PyQWT (and many other PyQt interoperable
-      # implementations such as the ROS GUI libs). This file is currently needed
-      # for generating build files appropriate for the qmake spec that was used
-      # to build Qt. The alternatives provided by configure-ng.py is not
-      # sufficient to replace pyqtconfig.py yet (see
-      # https://github.com/qgis/QGIS/pull/1508). Using configure.py is
-      # deprecated and will be removed with SIP v5, so we do the actual compile
-      # using the newer configure-ng.py as recommended. In order not to
-      # interfere with the build using configure-ng.py, we run configure.py in a
-      # temporary directory and only retain the pyqtconfig.py from that.
-
-      require "tmpdir"
-      dir = Dir.mktmpdir
-      begin
-        cp_r(Dir.glob("*"), dir)
-        cd dir do
-          system python, "configure.py", *args
-          inreplace "pyqtconfig.py", Formula["qt"].prefix, Formula["qt"].opt_prefix
-          (lib/"python#{version}/site-packages/PyQt4").install "pyqtconfig.py"
-        end
-      ensure
-        remove_entry_secure dir
-      end
-
-      # On Mavericks we want to target libc++, this requires a non default qt makespec
-      if ENV.compiler == :clang && MacOS.version >= :mavericks
-        args << "--spec" << "unsupported/macx-clang-libc++"
-      end
-
-      system python, "configure-ng.py", *args
-      system "make"
-      system "make", "install"
-      system "make", "clean" # for when building against multiple Pythons
-    end
+    system "python3", "configure.py", *args
+    system "make"
+    system "make", "install"
+    system "make", "clean"
   end
-
-  def caveats
-    "Phonon support is broken."
-  end
+  doc.install "doc/html", "examples" if build.with? "docs"
 
   test do
-    Pathname("test.py").write <<-EOS.undent
-      from PyQt4 import QtNetwork
-      QtNetwork.QNetworkAccessManager().networkAccessible()
-    EOS
-
-    Language::Python.each_python(build) do |python, _version|
-      system python, "test.py"
-    end
+    py3_ver = Language::Python.major_minor_version("python3").to_s
+    ENV.prepend_path "PYTHONPATH", lib/"python#{py3_ver}/site-packages"
+    system bin/"pyuic5", "--version"
+    system bin/"pylupdate5", "-version"
+    system bin/"python3", "-c", "import PyQt5"
+    %w[
+      Gui
+      Location
+      Multimedia
+      Network
+      Quick
+      Svg
+      WebEngineWidgets
+      Widgets
+      Xml
+    ].each { |mod| system "python3", "-c", "import PyQt5.Qt#{mod}" }
   end
 end
