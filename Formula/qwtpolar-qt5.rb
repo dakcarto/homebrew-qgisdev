@@ -19,7 +19,6 @@ class QwtpolarQt5 < Formula
   depends_on "qt5"
   depends_on "qwt-qt5"
 
-
   # Update designer plugin linking back to qwtpolar framework/lib after install
   # See: https://sourceforge.net/p/qwtpolar/patches/2/
   patch :DATA
@@ -49,7 +48,7 @@ class QwtpolarQt5 < Formula
     args = %W[-config release -spec]
     # On Mavericks we want to target libc++, this requires a unsupported/macx-clang-libc++ flag
     if ENV.compiler == :clang && MacOS.version >= :mavericks
-      args << "macx-clang")
+      args << "macx-clang"
     else
       args << "macx-g++"
     end
@@ -58,6 +57,10 @@ class QwtpolarQt5 < Formula
     system Formula["qt5"].bin/"qmake", *args
     system "make"
     system "make", "install"
+  end
+
+  test do
+    #
   end
 end
 

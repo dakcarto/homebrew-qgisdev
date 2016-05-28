@@ -49,17 +49,17 @@ class Qscintilla2Qt5Py3 < Formula
     # Add qscintilla2 features search path, since it is not installed in Qt keg's mkspecs/features/
     ENV["QMAKEFEATURES"] = "#{prefix}/data/mkspecs/features"
 
-      cd "Python" do
-          (share/"sip").mkpath
-          system "python3", "configure.py", "-o", lib, "-n", include,
-                 "--apidir=#{prefix}/qsci",
-                         "--destdir=#{lib}/python#{py3_ver}/site-packages/PyQt4",
-                 "--qsci-sipdir=#{share}/sip",
-                         "--pyqt-sipdir=#{Formula["sip-py3"]}/share/sip",
-                 "--spec=#{spec}"
-          system "make"
-          system "make", "install"
-          system "make", "clean"
+    cd "Python" do
+      (share/"sip").mkpath
+      system "python3", "configure.py", "-o", lib, "-n", include,
+             "--apidir=#{prefix}/qsci",
+                     "--destdir=#{lib}/python#{py3_ver}/site-packages/PyQt4",
+             "--qsci-sipdir=#{share}/sip",
+                     "--pyqt-sipdir=#{Formula["sip-py3"]}/share/sip",
+             "--spec=#{spec}"
+      system "make"
+      system "make", "install"
+      system "make", "clean"
     end
 
     if build.with? "plugin"
