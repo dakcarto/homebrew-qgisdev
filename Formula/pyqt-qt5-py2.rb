@@ -18,19 +18,19 @@ class PyqtQt5Py2 < Formula
   depends_on "sip-py2"
 
   def install
-    py2_ver = Language::Python.major_minor_version("python").to_s
+    py_ver = Language::Python.major_minor_version("python").to_s
 
     # On Mavericks we want to target libc++, this requires a non default qt makespec
     if ENV.compiler == :clang && MacOS.version >= :mavericks
       ENV.append "QMAKESPEC", "macx-clang"
     end
 
-    ENV.prepend_path "PYTHONPATH", "#{Formula["sip"].opt_lib}/python#{py2_ver}/site-packages"
+    ENV.prepend_path "PYTHONPATH", "#{Formula["sip"].opt_lib}/python#{py_ver}/site-packages"
 
     args = %W[
       --confirm-license
       --bindir=#{bin}
-      --destdir=#{lib}/python#{py2_ver}/site-packages
+      --destdir=#{lib}/python#{py_ver}/site-packages
       --sipdir=#{share}/sip
     ]
 
@@ -53,7 +53,7 @@ class PyqtQt5Py2 < Formula
       cd dir do
         system "python", "configure.py", *args
         inreplace "pyqtconfig.py", Formula["qt5"].prefix, Formula["qt5"].opt_prefix
-        (lib/"python#{py2_ver}/site-packages/PyQt5").install "pyqtconfig.py"
+        (lib/"python#{py_ver}/site-packages/PyQt5").install "pyqtconfig.py"
       end
     ensure
       remove_entry_secure dir
@@ -75,12 +75,12 @@ class PyqtQt5Py2 < Formula
   end
 
   test do
-    py2_ver = Language::Python.major_minor_version("python").to_s
+    py_ver = Language::Python.major_minor_version("python").to_s
     Pathname("test.py").write <<-EOS.undent
       from PyQt4 import QtNetwork
       QtNetwork.QNetworkAccessManager().networkAccessible()
     EOS
-    ENV.prepend_path "PYTHONPATH", lib/"python#{py2_ver}/site-packages"
+    ENV.prepend_path "PYTHONPATH", lib/"python#{py_ver}/site-packages"
     system "python", "test.py"
   end
 end

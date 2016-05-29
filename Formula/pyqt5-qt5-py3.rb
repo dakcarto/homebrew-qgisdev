@@ -22,12 +22,12 @@ class Pyqt5Qt5Py3 < Formula
   depends_on "sip-py3"
 
   def install
-    py3_ver = Language::Python.major_minor_version("python3").to_s
+    py_ver = Language::Python.major_minor_version("python3").to_s
 
     args = ["--confirm-license",
             "--bindir=#{bin}",
-            "--destdir=#{lib}/python#{py3_ver}/site-packages",
-            "--stubsdir=#{lib}/python#{py3_ver}/site-packages/PyQt5",
+            "--destdir=#{lib}/python#{py_ver}/site-packages",
+            "--stubsdir=#{lib}/python#{py_ver}/site-packages/PyQt5",
             "--sipdir=#{Formula["sip-py3"].opt_share}/sip/Qt5",
             # sip.h could not be found automatically
             "--sip-incdir=#{Formula["sip-py3"].opt_include}",
@@ -48,8 +48,8 @@ class Pyqt5Qt5Py3 < Formula
   doc.install "doc/html", "examples" if build.with? "docs"
 
   test do
-    py3_ver = Language::Python.major_minor_version("python3").to_s
-    ENV.prepend_path "PYTHONPATH", lib/"python#{py3_ver}/site-packages"
+    py_ver = Language::Python.major_minor_version("python3").to_s
+    ENV.prepend_path "PYTHONPATH", lib/"python#{py_ver}/site-packages"
     system bin/"pyuic5", "--version"
     system bin/"pylupdate5", "-version"
     system bin/"python3", "-c", "import PyQt5"

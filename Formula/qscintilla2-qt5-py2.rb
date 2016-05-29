@@ -20,7 +20,7 @@ class Qscintilla2Qt5Py2 < Formula
   depends_on "qt5"
 
   def install
-    py2_ver = Language::Python.major_minor_version("python").to_s
+    py_ver = Language::Python.major_minor_version("python").to_s
 
     # On Mavericks we want to target libc++, this requires a unsupported/macx-clang-libc++ flag
     if ENV.compiler == :clang && MacOS.version >= :mavericks
@@ -43,7 +43,7 @@ class Qscintilla2Qt5Py2 < Formula
         s.gsub! "$$[QT_INSTALL_HEADERS]", include
       end
 
-      system "qmake", "qscintilla.pro", *args
+      system Formula["qt5"].bin/"qmake", "qscintilla.pro", *args
       system "make"
       system "make", "install"
     end
@@ -52,10 +52,13 @@ class Qscintilla2Qt5Py2 < Formula
     ENV["QMAKEFEATURES"] = "#{prefix}/data/mkspecs/features"
 
     cd "Python" do
+      ENV.prepend_path "PYTHONPATH", Formula["sip-py2"].opt_lib/"python#{py_ver}/site-packages"
+      ENV.prepend_path "PYTHONPATH", Formula["pyqt-qt5-py2"].opt_lib/"python#{py_ver}/site-packages"
+
       (share/"sip").mkpath
       system "python", "configure.py", "-o", lib, "-n", include,
                        "--apidir=#{prefix}/qsci",
-                       "--destdir=#{lib}/python#{py2_ver}/site-packages/PyQt4",
+                       "--destdir=#{lib}/python#{py_ver}/site-packages/PyQt5",
                        "--qsci-sipdir=#{share}/sip",
                        "--pyqt-sipdir=#{HOMEBREW_PREFIX}/share/sip",
                        "--spec=#{spec}"
@@ -79,8 +82,8 @@ class Qscintilla2Qt5Py2 < Formula
   end
 
   test do
-    py2_ver = Language::Python.major_minor_version("python").to_s
-    ENV.prepend_path "PYTHONPATH", lib/"python#{py2_ver}/site-packages"
+    py_ver = Language::Python.major_minor_version("python").to_s
+    ENV.prepend_path "PYTHONPATH", lib/"python#{py_ver}/site-packages"
     Pathname("test.py").write <<-EOS.undent
       import PyQt4.Qsci
       assert("QsciLexer" in dir(PyQt4.Qsci))
